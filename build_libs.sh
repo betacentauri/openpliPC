@@ -72,7 +72,7 @@ if [ -d $PKG ]; then
 	rm -Rf $PKG
 	rm -f $PKG*
 fi
-git clone git://schwerkraft.elitedvb.net/libdreamdvd/$PKG.git
+git clone git://github.com/mirakels/$PKG.git
 cd $PKG
 dpkg-buildpackage -uc -us
 cd ..
