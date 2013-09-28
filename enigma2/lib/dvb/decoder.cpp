@@ -3,7 +3,6 @@
 #include <lib/base/eerror.h>
 #include <lib/base/wrappers.h>
 #include <lib/dvb/decoder.h>
-#include <lib/components/tuxtxtapp.h>
 #include <linux/dvb/audio.h>
 #include <linux/dvb/video.h>
 #include <linux/dvb/dmx.h>
@@ -657,8 +656,8 @@ int eTSMPEGDecoder::setState()
 		if (m_text)
 		{
 			m_text->stop();
-			if ( m_decoder == 0 )	// Tuxtxt caching actions only on primary decoder
-				eTuxtxtApp::getInstance()->stopCaching();
+			//if ( m_decoder == 0 )	// Tuxtxt caching actions only on primary decoder
+			//	eTuxtxtApp::getInstance()->stopCaching();
 		}
 		m_text = 0;
 	}
@@ -705,11 +704,11 @@ int eTSMPEGDecoder::setState()
 			{
 				uint8_t demux = 0;
 				m_demux->getCADemuxID(demux);
-				eTuxtxtApp::getInstance()->startCaching(m_textpid, demux);
+				//eTuxtxtApp::getInstance()->startCaching(m_textpid, demux);
 			}
 		}
-		else if ( m_decoder == 0 )	// Tuxtxt caching actions only on primary decoder
-			eTuxtxtApp::getInstance()->resetPid();
+		//else if ( m_decoder == 0 )	// Tuxtxt caching actions only on primary decoder
+		//	eTuxtxtApp::getInstance()->resetPid();
 
 		m_changed &= ~changeText;
 	}
@@ -805,8 +804,8 @@ eTSMPEGDecoder::eTSMPEGDecoder(eDVBDemux *demux, int decoder)
 	sprintf(filename, "/dev/dvb/adapter%d/audio%d", m_demux->adapter, m_decoder);
 	m_has_audio = !access(filename, W_OK);
 
-	if ( m_decoder == 0 )	// Tuxtxt caching actions only on primary decoder
-		eTuxtxtApp::getInstance()->initCache();
+	//if ( m_decoder == 0 )	// Tuxtxt caching actions only on primary decoder
+	//	eTuxtxtApp::getInstance()->initCache();
 }
 
 eTSMPEGDecoder::~eTSMPEGDecoder()
@@ -816,8 +815,8 @@ eTSMPEGDecoder::~eTSMPEGDecoder()
 	m_changed = -1;
 	setState();
 
-	if ( m_decoder == 0 )	// Tuxtxt caching actions only on primary decoder
-		eTuxtxtApp::getInstance()->freeCache();
+	//if ( m_decoder == 0 )	// Tuxtxt caching actions only on primary decoder
+	//	eTuxtxtApp::getInstance()->freeCache();
 }
 
 RESULT eTSMPEGDecoder::setVideoPID(int vpid, int type)

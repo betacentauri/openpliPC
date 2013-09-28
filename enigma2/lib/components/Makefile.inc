@@ -2,8 +2,7 @@ noinst_LIBRARIES += components/libenigma_components.a
 
 components_libenigma_components_a_SOURCES = \
 	components/file_eraser.cpp \
-	components/scan.cpp \
-	components/tuxtxtapp.cpp
+	components/scan.cpp
 
 componentsincludedir = $(pkgincludedir)/lib/components
 componentsinclude_HEADERS = \

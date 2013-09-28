@@ -95,7 +95,6 @@ is usually caused by not marking PSignals as immutable.
 #include <lib/dvb/cablescan.h>
 #include <lib/components/scan.h>
 #include <lib/components/file_eraser.h>
-#include <lib/components/tuxtxtapp.h>
 #include <lib/driver/avswitch.h>
 #include <lib/driver/hdmi_cec.h>
 #include <lib/driver/rfmod.h>
@@ -236,7 +235,6 @@ typedef long time_t;
 %include <lib/dvb/cablescan.h>
 %include <lib/components/scan.h>
 %include <lib/components/file_eraser.h>
-%include <lib/components/tuxtxtapp.h>
 %include <lib/driver/avswitch.h>
 %include <lib/driver/hdmi_cec.h>
 %include <lib/driver/rfmod.h>
@@ -390,8 +388,8 @@ void setEnableTtCachingOnOff(int);
 %{
 void setEnableTtCachingOnOff(int onoff)
 {
-	eTuxtxtApp *tt = eTuxtxtApp::getInstance();
-	if (tt) tt->setEnableTtCachingOnOff(onoff);
+	//eTuxtxtApp *tt = eTuxtxtApp::getInstance();
+	//if (tt) tt->setEnableTtCachingOnOff(onoff);
 }
 %}
 
