@@ -42,10 +42,24 @@ gdiinclude_HEADERS = \
 
 if HAVE_LIBSDL
 gdi_libenigma_gdi_a_SOURCES += \
-	gdi/sdl.cpp \
+	gdi/sdl.cpp
+
+gdiinclude_HEADERS += \
 	gdi/sdl.h
+else 
+if HAVE_XLIB
+gdi_libenigma_gdi_a_SOURCES += \
+	gdi/gxlibdc.cpp \
+	gdi/xineLib.cpp
+
+gdiinclude_HEADERS += \
+	gdi/gxlibdc.h \
+	gdi/xineLib.h
 else
 gdi_libenigma_gdi_a_SOURCES += \
-	gdi/gfbdc.cpp \
+	gdi/gfbdc.cpp
+
+gdiinclude_HEADERS += \
 	gdi/gfbdc.h
+endif
 endif

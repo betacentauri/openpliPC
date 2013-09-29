@@ -31,3 +31,11 @@ driver_libenigma_driver_a_SOURCES += \
 	driver/rcsdl.cpp \
 	driver/rcsdl.h
 endif
+
+if HAVE_XLIB
+driver_libenigma_driver_a_SOURCES += \
+	driver/rcxlib.cpp
+
+driverinclude_HEADERS += \
+	driver/rcxlib.h
+endif
