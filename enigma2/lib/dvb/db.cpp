@@ -913,12 +913,8 @@ PyObject *eDVBDB::readSatellites(ePyObject sat_list, ePyObject sat_dict, ePyObje
 		return NULL;
 	}
 	XMLTree tree;
-	const char* satellitesFilename = "/etc/enigma2/satellites.xml";
-	if (::access(satellitesFilename, R_OK) < 0)
-	{
-		satellitesFilename = "/etc/tuxbox/satellites.xml";
-	}
-	tree.setFilename(satellitesFilename);
+	std::string filename = eEnv::resolve("${sysconfdir}/tuxbox/satellites.xml");
+	tree.setFilename(filename.c_str());
 	tree.read();
 	Element *root = tree.getRoot();
 	if (!root)
@@ -1072,7 +1068,8 @@ PyObject *eDVBDB::readCables(ePyObject cab_list, ePyObject tp_dict)
 		return NULL;
 	}
 	XMLTree tree;
-	tree.setFilename("/etc/tuxbox/cables.xml");
+	std::string filename = eEnv::resolve("${sysconfdir}/tuxbox/cables.xml");
+	tree.setFilename(filename.c_str());
 	tree.read();
 	Element *root = tree.getRoot();
 	if (!root)
@@ -1192,7 +1189,8 @@ PyObject *eDVBDB::readTerrestrials(ePyObject ter_list, ePyObject tp_dict)
 		return NULL;
 	}
 	XMLTree tree;
-	tree.setFilename("/etc/tuxbox/terrestrial.xml");
+	std::string filename = eEnv::resolve("${sysconfdir}/tuxbox/terrestrial.xml");
+	tree.setFilename(filename.c_str());
 	tree.read();
 	Element *root = tree.getRoot();
 	if (!root)

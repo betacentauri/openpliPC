@@ -574,12 +574,12 @@ class NIM(object):
 	def setInternalLink(self):
 		if self.internally_connectable is not None:
 			print "setting internal link on frontend id", self.frontend_id
-			open("/proc/stb/frontend/%d/rf_switch" % self.frontend_id, "w").write("internal")
+			open(eEnv.resolve("${sysconfdir}/stb/frontend/%d/rf_switch") % self.frontend_id, "w").write("internal")
 
 	def removeInternalLink(self):
 		if self.internally_connectable is not None:
 			print "removing internal link on frontend id", self.frontend_id
-			open("/proc/stb/frontend/%d/rf_switch" % self.frontend_id, "w").write("external")
+			open(eEnv.resolve("${sysconfdir}/stb/frontend/%d/rf_switch") % self.frontend_id, "w").write("external")
 
 	def isMultiType(self):
 		return (len(self.multi_type) > 0)
@@ -726,7 +726,7 @@ class NimManager:
 		self.nim_slots = [ ]
 
 		try:
-			nimfile = open("/proc/bus/nim_sockets")
+			nimfile = open(eEnv.resolve("${sysconfdir}/tuxbox/nim_sockets"))
 		except IOError:
 			return
 
@@ -785,7 +785,7 @@ class NimManager:
 			if not (entry.has_key("has_outputs")):
 				entry["has_outputs"] = True
 			if entry.has_key("frontend_device"): # check if internally connectable
-				if path.exists("/proc/stb/frontend/%d/rf_switch" % entry["frontend_device"]):
+				if path.exists(eEnv.resolve("${sysconfdir}/stb/frontend/%d/rf_switch") % entry["frontend_device"]):
 					entry["internally_connectable"] = entry["frontend_device"] - 1
 				else:
 					entry["internally_connectable"] = None
@@ -1401,7 +1401,7 @@ def InitNimManager(nimmgr):
 		fe_id = configElement.fe_id
 		slot_id = configElement.slot_id
 		if nimmgr.nim_slots[slot_id].description == 'Alps BSBE2':
-			open("/proc/stb/frontend/%d/tone_amplitude" %(fe_id), "w").write(configElement.value)
+			open(eEnv.resolve("${sysconfdir}/stb/frontend/%d/tone_amplitude") %(fe_id), "w").write(configElement.value)
 
 	def createSatConfig(nim, x, empty_slots):
 		try:
@@ -1537,8 +1537,8 @@ def InitNimManager(nimmgr):
 		fe_id = configElement.fe_id
 		eDVBResourceManager.getInstance().setFrontendType(nimmgr.nim_slots[fe_id].frontend_id, nimmgr.nim_slots[fe_id].getType())
 		import os
-		if os.path.exists("/proc/stb/frontend/%d/mode" % fe_id):
-			cur_type = int(open("/proc/stb/frontend/%d/mode" % (fe_id), "r").read())
+		if os.path.exists(eEnv.resolve("${sysconfdir}/stb/frontend/%d/mode") % fe_id):
+			cur_type = int(open(eEnv.resolve("${sysconfdir}/stb/frontend/%d/mode") % (fe_id), "r").read())
 			if cur_type != int(configElement.value):
 				print "tunerTypeChanged feid %d from %d to mode %d" % (fe_id, cur_type, int(configElement.value))
 
@@ -1550,7 +1550,7 @@ def InitNimManager(nimmgr):
 
 				frontend = eDVBResourceManager.getInstance().allocateRawChannel(fe_id).getFrontend()
 				frontend.closeFrontend()
-				open("/proc/stb/frontend/%d/mode" % (fe_id), "w").write(configElement.value)
+				open(eEnv.resolve("${sysconfdir}/stb/frontend/%d/mode") % (fe_id), "w").write(configElement.value)
 				frontend.reopenFrontend()
 				try:
 					open("/sys/module/dvb_core/parameters/dvb_shutdown_timeout", "w").write(oldvalue)
