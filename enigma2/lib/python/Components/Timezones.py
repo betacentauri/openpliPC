@@ -1,4 +1,5 @@
 import xml.etree.cElementTree
+from enigma import eEnv
 
 from os import environ, unlink, symlink
 import time
@@ -10,7 +11,7 @@ class Timezones:
 
 	def readTimezonesFromFile(self):
 		try:
-			root = xml.etree.cElementTree.parse('/etc/timezone.xml').getroot()
+			root = xml.etree.cElementTree.parse(eEnv.resolve("${sysconfdir}/tuxbox/timezone.xml")).getroot()
 			for zone in root.findall("zone"):
 				self.timezones.append((zone.get('name',""), zone.get('zone',"")))
 		except:
@@ -25,11 +26,11 @@ class Timezones:
 		
 		environ['TZ'] = self.timezones[index][1]
 		try:
-			unlink("/etc/localtime")
+			unlink(eEnv.resolve("${sysconfdir}/localtime"))
 		except OSError:
 			pass
 		try:
-			symlink("/usr/share/zoneinfo/%s" %(self.timezones[index][1]), "/etc/localtime")
+			symlink(eEnv.resolve("${datarootdir}/zoneinfo/%s") %(self.timezones[index][1]), eEnv.resolve("${sysconfdir}/localtime"))
 		except OSError:
 			pass
 		try:
