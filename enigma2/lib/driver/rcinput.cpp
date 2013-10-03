@@ -15,6 +15,7 @@
 
 void eRCDeviceInputDev::handleCode(long rccode)
 {
+	return;
 	struct input_event *ev = (struct input_event *)rccode;
 
 	if (ev->type != EV_KEY)
