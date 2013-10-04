@@ -2118,7 +2118,17 @@ RESULT eDVBChannel::playSource(ePtr<iTsSource> &source, const char *streaminfo_f
 			return -ENODEV;
 		}
 #else
-		ePtr<eDVBAllocatedDemux> &demux = m_demux ? m_demux : m_decoder_demux;
+		// OpenPliPC
+		if (m_pvr_fd_dst < 0)
+		{
+			m_pvr_fd_dst = ::open("/tmp/ENIGMA_FIFO", O_RDWR);
+			if (m_pvr_fd_dst < 0)
+			{
+				eDebug("can't open DVR device - FIFO file (%m)");
+				return -ENODEV;
+			}
+		}
+		/*ePtr<eDVBAllocatedDemux> &demux = m_demux ? m_demux : m_decoder_demux;
 		if (demux)
 		{
 			m_pvr_fd_dst = demux->get().openDVR(O_WRONLY);
@@ -2132,7 +2142,7 @@ RESULT eDVBChannel::playSource(ePtr<iTsSource> &source, const char *streaminfo_f
 		{
 			eDebug("no demux allocated yet.. so its not possible to open the dvr device!!");
 			return -ENODEV;
-		}
+		}*/
 #endif
 	}
 

@@ -814,9 +814,11 @@ int eDVBServicePMTHandler::tuneExt(eServiceReferenceDVB &ref, int use_decode_dem
 		{
 			m_pvr_channel->setCueSheet(cue);
 
-			if (m_pvr_channel->getDemux(m_pvr_demux_tmp, (!m_use_decode_demux) ? 0 : iDVBChannel::capDecode))
-				eDebug("Allocating %s-decoding a demux for PVR channel failed.", m_use_decode_demux ? "" : "non-");
-			else if (source)
+			// OpenPliPC
+			//if (m_pvr_channel->getDemux(m_pvr_demux_tmp, (!m_use_decode_demux) ? 0 : iDVBChannel::capDecode))
+			//	eDebug("Allocating %s-decoding a demux for PVR channel failed.", m_use_decode_demux ? "" : "non-");
+			//else 
+			if (source)
 				m_pvr_channel->playSource(source, streaminfo_file);
 			else
 				m_pvr_channel->playFile(ref.path.c_str());

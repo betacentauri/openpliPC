@@ -6,6 +6,7 @@
 #include <linux/dvb/audio.h>
 #include <linux/dvb/video.h>
 #include <linux/dvb/dmx.h>
+#include <lib/gdi/xineLib.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -30,9 +31,34 @@ eDVBAudio::eDVBAudio(eDVBDemux *demux, int dev)
 		eWarning("%s: %m", filename);
 }
 
+#if WITH_XLIB == 0
+#define STREAM_SPU_BITMAP_HDMV   0x90
+#define ISO_13818_AUDIO          0x01
+#define STREAM_VIDEO_VC1         0xea    /* VC-1 Video */
+#define HDMV_AUDIO_80_PCM        0x06 /* BluRay PCM */
+#define STREAM_AUDIO_AC3         0x00
+#define HDMV_AUDIO_82_DTS        0x02 /* DTS */
+#define HDMV_AUDIO_83_TRUEHD     0x83 /* Dolby TrueHD, primary audio */
+#define HDMV_AUDIO_84_EAC3       0x84 /* Dolby Digital plus, primary audio */
+#define HDMV_AUDIO_85_DTS_HRA    0x85 /* DTS-HRA */
+#define HDMV_AUDIO_86_DTS_HD_MA  0x10 /* DTS-HD Master audio */
+#else
+#define STREAM_SPU_BITMAP_HDMV   0x90
+#define ISO_13818_AUDIO          0x04
+#define STREAM_VIDEO_VC1         0xea    /* VC-1 Video */
+#define HDMV_AUDIO_80_PCM        0x80 /* BluRay PCM */
+#define STREAM_AUDIO_AC3         0x81
+#define HDMV_AUDIO_82_DTS        0x82 /* DTS */
+#define HDMV_AUDIO_83_TRUEHD     0x83 /* Dolby TrueHD, primary audio */
+#define HDMV_AUDIO_84_EAC3       0x84 /* Dolby Digital plus, primary audio */
+#define HDMV_AUDIO_85_DTS_HRA    0x85 /* DTS-HRA */
+#define HDMV_AUDIO_86_DTS_HD_MA  0x86 /* DTS-HD Master audio */
+#endif
+
 int eDVBAudio::startPid(int pid, int type)
 {
-	if ((m_fd < 0) || (m_fd_demux < 0))
+	// OpenPliPC
+	/*if ((m_fd < 0) || (m_fd_demux < 0))
 		return -1;
 	dmx_pes_filter_params pes;
 
@@ -40,7 +66,7 @@ int eDVBAudio::startPid(int pid, int type)
 	pes.input    = DMX_IN_FRONTEND;
 	pes.output   = DMX_OUT_DECODER;
 	pes.pes_type = m_dev ? DMX_PES_AUDIO1 : DMX_PES_AUDIO0; /* FIXME */
-	pes.flags    = 0;
+	/*pes.flags    = 0;
 	eDebugNoNewLine("DMX_SET_PES_FILTER(0x%02x) - audio - ", pid);
 	if (::ioctl(m_fd_demux, DMX_SET_PES_FILTER, &pes) < 0)
 	{
@@ -54,19 +80,19 @@ int eDVBAudio::startPid(int pid, int type)
 		eDebug("failed (%m)");
 		return -errno;
 	}
-	eDebug("ok");
+	eDebug("ok");*/
 	int bypass = 0;
 
 	switch (type)
 	{
 	case aMPEG:
-		bypass = 1;
+		bypass = ISO_13818_AUDIO;
 		break;
 	case aAC3:
-		bypass = 0;
+		bypass = STREAM_AUDIO_AC3;
 		break;
 	case aDTS:
-		bypass = 2;
+		bypass = HDMV_AUDIO_82_DTS;
 		break;
 	case aAAC:
 		bypass = 8;
@@ -75,10 +101,10 @@ int eDVBAudio::startPid(int pid, int type)
 		bypass = 9;
 		break;
 	case aLPCM:
-		bypass = 6;
+		bypass = HDMV_AUDIO_80_PCM;
 		break;
 	case aDTSHD:
-		bypass = 0x10;
+		bypass = HDMV_AUDIO_86_DTS_HD_MA;
 		break;
 	case aDDP:
 		bypass = 0x22;
@@ -86,7 +112,7 @@ int eDVBAudio::startPid(int pid, int type)
 	}
 
 	eDebugNoNewLine("AUDIO_SET_BYPASS(%d) - ", bypass);
-	if (::ioctl(m_fd, AUDIO_SET_BYPASS_MODE, bypass) < 0)
+	/*if (::ioctl(m_fd, AUDIO_SET_BYPASS_MODE, bypass) < 0)
 		eDebug("failed (%m)");
 	else
 		eDebug("ok");
@@ -94,8 +120,12 @@ int eDVBAudio::startPid(int pid, int type)
 	eDebugNoNewLine("AUDIO_PLAY - ");
 	if (::ioctl(m_fd, AUDIO_PLAY) < 0)
 		eDebug("failed (%m)");
-	else
+	else*/
 		eDebug("ok");
+
+	cXineLib *xineLib = cXineLib::getInstance();
+	xineLib->setAudioType(pid, bypass);
+	xineLib->playVideo();
 	return 0;
 }
 
@@ -218,19 +248,29 @@ eDVBVideo::eDVBVideo(eDVBDemux *demux, int dev)
 }
 
 // not finally values i think.. !!
+#if WITH_XLIB == 0
 #define VIDEO_STREAMTYPE_MPEG2 0
 #define VIDEO_STREAMTYPE_MPEG4_H264 1
 #define VIDEO_STREAMTYPE_VC1 3
 #define VIDEO_STREAMTYPE_MPEG4_Part2 4
 #define VIDEO_STREAMTYPE_VC1_SM 5
 #define VIDEO_STREAMTYPE_MPEG1 6
+#else
+#define VIDEO_STREAMTYPE_MPEG2       0x02
+#define VIDEO_STREAMTYPE_MPEG4_H264  0x1B
+#define VIDEO_STREAMTYPE_VC1         0xEA
+#define VIDEO_STREAMTYPE_MPEG4_Part2 0x10
+#define VIDEO_STREAMTYPE_VC1_SM      0xEA
+#define VIDEO_STREAMTYPE_MPEG1       0x01
+#endif
 
 int eDVBVideo::startPid(int pid, int type)
 {
 	int streamtype = VIDEO_STREAMTYPE_MPEG2;
 
-	if ((m_fd < 0) || (m_fd_demux < 0))
-		return -1;
+	// OpenPliPC
+	//if ((m_fd < 0) || (m_fd_demux < 0))
+	//	return -1;
 	dmx_pes_filter_params pes;
 
 	switch(type)
@@ -255,17 +295,18 @@ int eDVBVideo::startPid(int pid, int type)
 		break;
 	}
 
+	// OpenPliPC
 	eDebugNoNewLine("VIDEO_SET_STREAMTYPE %d - ", streamtype);
-	if (::ioctl(m_fd, VIDEO_SET_STREAMTYPE, streamtype) < 0)
+	/*if (::ioctl(m_fd, VIDEO_SET_STREAMTYPE, streamtype) < 0)
 		eDebug("failed (%m)");
-	else
+	else*/
 		eDebug("ok");
 
-	pes.pid      = pid;
+	/*pes.pid      = pid;
 	pes.input    = DMX_IN_FRONTEND;
 	pes.output   = DMX_OUT_DECODER;
 	pes.pes_type = m_dev ? DMX_PES_VIDEO1 : DMX_PES_VIDEO0; /* FIXME */
-	pes.flags    = 0;
+	/*pes.flags    = 0;
 	eDebugNoNewLine("DMX_SET_PES_FILTER(0x%02x) - video - ", pid);
 	if (::ioctl(m_fd_demux, DMX_SET_PES_FILTER, &pes) < 0)
 	{
@@ -286,6 +327,13 @@ int eDVBVideo::startPid(int pid, int type)
 		eDebug("failed (%m)");
 	else
 		eDebug("ok");
+	return 0;*/
+
+	cXineLib *xineLib = cXineLib::getInstance();
+	xineLib->setVideoType(pid, type);
+	freeze();
+	eDebug("VIDEO_PLAY");
+	xineLib->playVideo();
 	return 0;
 }
 
@@ -301,6 +349,10 @@ void eDVBVideo::stop()
 		eDebug("failed (%m)");
 	else
 		eDebug("ok");
+
+	// OpenPliPC
+	cXineLib *xineLib = cXineLib::getInstance();
+	xineLib->stopVideo();
 }
 
 void eDVBVideo::flush()
@@ -319,6 +371,10 @@ void eDVBVideo::freeze()
 		eDebug("failed (%m)");
 	else
 		eDebug("ok");
+
+	// OpenPliPC
+	cXineLib *xineLib = cXineLib::getInstance();
+	xineLib->VideoPause();
 }
 
 void eDVBVideo::unfreeze()
@@ -328,6 +384,10 @@ void eDVBVideo::unfreeze()
 		eDebug("failed (%m)");
 	else
 		eDebug("ok");
+
+	// OpenPliPC
+	cXineLib *xineLib = cXineLib::getInstance();
+	xineLib->VideoResume();
 }
 
 int eDVBVideo::setSlowMotion(int repeat)
@@ -355,8 +415,9 @@ int eDVBVideo::setFastForward(int skip)
 int eDVBVideo::getPTS(pts_t &now)
 {
 	int ret = ::ioctl(m_fd, VIDEO_GET_PTS, &now);
-	if (ret < 0)
-		eDebug("VIDEO_GET_PTS failed(%m)");
+	// OpenPliPC
+	//if (ret < 0)
+	//	eDebug("VIDEO_GET_PTS failed(%m)");
 	return ret;
 }
 
